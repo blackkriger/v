@@ -43,6 +43,7 @@ async function draw(api: API, ctx: MessageContext): Promise<void> {
 }
 
 async function showStats(api: API, ctx: MessageContext): Promise<void> {
+  if (drawing.has(ctx.peerId)) return;
   const present = new Set((await participants(api, ctx.peerId)).map((p) => p.id));
   const rows = stats(ctx.peerId);
   if (rows.length === 0) return;
