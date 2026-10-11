@@ -1,7 +1,7 @@
 import type { API, MessageContext } from 'vk-io';
 import { CHAT_PEER_ID, OWNER_ID, TIME_ZONE } from '../config.js';
 import { type Person, drawnName, recordDraw, saveUsers, stats } from './registry.js';
-import { FINALES, MIDDLES, OPENINGS, STATS_HEADER, alreadyDrawn, statsLine } from './texts.js';
+import { FINALES, MIDDLES, OPENINGS, alreadyDrawn, statsHeader, statsLine } from './texts.js';
 
 const DAILY_LIMIT_PEERS = new Set([CHAT_PEER_ID]);
 const drawing = new Set<number>();
@@ -44,11 +44,14 @@ async function draw(api: API, ctx: MessageContext): Promise<void> {
 
 async function showStats(api: API, ctx: MessageContext): Promise<void> {
   if (drawing.has(ctx.peerId)) return;
+  const args = ctx.text!.trim().split(/\s+/).slice(1);
+  if (args.length > 1 || (args.length === 1 && !/^\d{4}$/.test(args[0]))) return;
+  const year = args[0] ?? today().slice(0, 4);
   const present = new Set((await participants(api, ctx.peerId)).map((p) => p.id));
-  const rows = stats(ctx.peerId);
+  const rows = stats(ctx.peerId, year);
   if (rows.length === 0) return;
   const lines = rows.map((r, i) => statsLine(i + 1, r.name, !present.has(r.id), r.count));
-  await ctx.send([STATS_HEADER, ...lines].join('\n'));
+  await ctx.send([statsHeader(year), ...lines].join('\n'));
 }
 
 async function participants(api: API, peerId: number): Promise<Person[]> {

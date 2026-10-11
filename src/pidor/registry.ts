@@ -1,6 +1,7 @@
 import { db } from '../db.js';
 
 export type Person = { id: number; name: string };
+type StatsRow = { id: number; name: string; count: number };
 
 const upsertUser = db.prepare(
   'INSERT INTO users (id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name',
@@ -15,7 +16,7 @@ const selectDrawOfDay = db.prepare(
 const selectStats = db.prepare(
   `SELECT d.user_id AS id, u.name AS name, COUNT(*) AS count
    FROM pidor_draws d JOIN users u ON u.id = d.user_id
-   WHERE d.peer_id = ?
+   WHERE d.peer_id = ? AND d.day BETWEEN ? AND ?
    GROUP BY d.user_id
    ORDER BY count DESC, MIN(d.id)`,
 );
@@ -34,6 +35,6 @@ export function drawnName(peerId: number, day: string): string | undefined {
   return row?.name;
 }
 
-export function stats(peerId: number): Array<{ id: number; name: string; count: number }> {
-  return selectStats.all(peerId) as Array<{ id: number; name: string; count: number }>;
+export function stats(peerId: number, year: string): StatsRow[] {
+  return selectStats.all(peerId, `${year}-01-01`, `${year}-12-31`) as StatsRow[];
 }

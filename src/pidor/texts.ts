@@ -59,7 +59,7 @@ export const FINALES: Array<(mention: string) => string> = [
 
 export const alreadyDrawn = (name: string) => `Запись на сегодня уже сделана: ${name}.`;
 
-export const STATS_HEADER = 'Выписка из реестра пидоров:';
+export const statsHeader = (year: string) => `Выписка из реестра пидоров за ${year} год:`;
 
 export const statsLine = (place: number, name: string, left: boolean, count: number) =>
   `${place}. ${name}${left ? ' (вышел)' : ''} — ${count} ${pluralTimes(count)}`;
